@@ -5,7 +5,6 @@
 [![Dependency Status](https://david-dm.org/CentralPing/passcode.svg)](https://david-dm.org/CentralPing/passcode)
 [![Greenkeeper Status](https://badges.greenkeeper.io/CentralPing/passcode.svg)](https://greenkeeper.io/)
 [![Known Vulnerabilities](https://snyk.io/test/github/centralping/passcode/badge.svg)](https://snyk.io/test/github/centralping/passcode)
-[![npm version](https://img.shields.io/npm/v/passcode.svg)](https://www.npmjs.com/package/passcode)
 
 A slightly opinionated stateless passcode manager.
 

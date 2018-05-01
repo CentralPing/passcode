@@ -8,10 +8,12 @@
     "node": ">=8"
   },
   "scripts": {
-    "lint": "eslint \"${INIT_CWD}/**\"",
+    "lint": "eslint \"${INIT_CWD}/**/*.js\"",
     "pretest": "npm run lint",
     "test": "jest",
     "watch": "npm test -- --watch --coverage",
+    "prepublishOnly": "npm test -- --coverage",
+    "publish": "coveralls < coverage/lcov.info",
     "docs": "jsdoc2md -t docs/readme.hbs --files lib/*.js > README.md"
   },
   "repository": {
@@ -41,6 +43,7 @@
     "uuid": "^3.2.1"
   },
   "devDependencies": {
+    "coveralls": "^3.0.0",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
     "eslint-plugin-import": "^2.9.0",

@@ -1,4 +1,4 @@
-# @centralping/passcode
+# @CentralPing/passcode
 
 [![Build Status](https://travis-ci.org/CentralPing/passcode.svg?branch=master)](https://travis-ci.org/CentralPing/passcode)
 [![Coverage Status](https://coveralls.io/repos/github/CentralPing/passcode/badge.svg)](https://coveralls.io/github/CentralPing/passcode)

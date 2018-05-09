@@ -38,12 +38,12 @@
   },
   "homepage": "https://github.com/CentralPing/passcode",
   "dependencies": {
-    "esm": "^3.0.28",
+    "esm": "^3.0.32",
     "jsonwebtoken": "^8.2.1",
     "uuid": "^3.2.1"
   },
   "devDependencies": {
-    "coveralls": "^3.0.0",
+    "coveralls": "^3.0.1",
     "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
     "eslint-plugin-import": "^2.9.0",

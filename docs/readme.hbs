@@ -8,7 +8,7 @@
 
 A slightly opinionated stateless passcode manager.
 
-*The exposed configuration object will act as a global for all imports of this module.*
+As with all JWTs, extreme care should be employed if including any sensitive information in the payload.
 
 ## Installation
 
@@ -26,29 +26,58 @@ A slightly opinionated stateless passcode manager.
 ### For Simple Verification
 
 ```js
-const { issue, verify } = require('passcode');
+const {issue, verify} = require('passcode');
+const {v4} = require('uuid');
+
+const secret = v4();
 
 // Generate a token with random passcode
-const tokenInfo = issue(); // {id, expires, code, token}
+const {error, value: {id, expires, code, token}} = issue({}, {secret});
 /**
  * Do something with the token
  */
 // Verify token with code
-const decodedToken = verify(token, {code: '012345'});
+const {error, value} = verify(token, {secret, code});
 ```
 
 ### For Verification With Meta Information
 
 ```js
-const { issue, verify } = require('passcode');
+const {issue, verify} = require('passcode');
+const {v4} = require('uuid');
 
-// Generate a token with random passcode
-const tokenInfo = issue({email: 'foo@bar.com'}); // {id, expires, code, token}
+const salt = v4();
+const secret = v4();
+
+// Generate a token with custom payload
+const {error, value: {id, expires, code, token}} = issue(
+  {email: 'foo@bar.com'},
+  {secret}
+);
 /**
  * Do something with the token
  */
 // Verify token with code
-const decodedToken = verify(token, {code: '012345'});
+const {error, {email}} = verify(token, {secret, code});
+```
+
+### For Hashing Challenge Code
+By default challenge codes are stored as a string in the payload of the JWT. Providing a salt (as well as other hashing options) can provide a bit more security.
+
+```js
+const {issue, verify} = require('passcode');
+const {v4} = require('uuid');
+
+const secret = v4();
+const salt = v4();
+
+// Generate a token with random passcode
+const {error, value: {id, expires, code, token}} = issue({}, {secret}, {salt});
+/**
+ * Do something with the token
+ */
+// Verify token with code
+const {error, value} = verify(token, {secret, code}, {salt});
 ```
 
 ## License

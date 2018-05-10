@@ -27,14 +27,10 @@ Issues a token, token ID, expiration and the stringified challenge code.
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | [payload] | <code>Object</code> |  |  |
-| [payload.iat] | <code>Date</code> | <code>Date.now</code> | JWT issue timestamp. |
-| [payload.jti] | <code>Date</code> | <code>uuid</code> | JWT ID (should be unique). |
+| [payload.jti] | <code>Date</code> |  | JWT ID (defaults to a uuid.v4 value). |
 | claims | <code>Object</code> |  |  |
-| claims.secret | <code>String</code> |  | A string to sign the JWT. |
-| [claims.code] | <code>String</code> | <code>??????</code> | The challenge code (defaults to  random 6 digit string). |
-| [claims.issuer] | <code>String</code> |  | JWT issuer (used as additional verification). |
-| [claims.subject] | <code>String</code> |  | JWT subject (used as additional  verification). |
-| [claims.audience] | <code>String</code> |  | JWT audience (used as additional  verification). |
+| [claims.secret] | <code>String</code> |  | A string to sign the JWT. |
+| [claims.code] | <code>String</code> |  | The challenge code (defaults to random  6 digit string). |
 | [claims.expiresIn] | <code>Number</code> \| <code>String</code> | <code>5m</code> | JWT expiration time span.  In seconds or a parsable string for [zeit/ms](https://github.com/zeit/ms) |
 | hash | <code>Object</code> |  |  |
 | [hash.salt] | <code>String</code> |  | A string to salt the challenge code  hash. If undefined then the code will not be hashed. |
@@ -63,11 +59,11 @@ Verifies an issued token with the provided challenge code
 | --- | --- | --- | --- |
 | token | <code>String</code> |  | The token to be verified |
 | claims | <code>Object</code> |  |  |
-| [claims.code] | <code>String</code> | <code>&#x27;&#x27;</code> | The challenge code. |
-| claims.secret | <code>String</code> |  | A string to sign the JWT. |
-| [claims.issuer] | <code>String</code> |  | JWT issuer (used as additional verification). |
-| [claims.subject] | <code>String</code> |  | JWT subject (used as additional  verification). |
-| [claims.audience] | <code>String</code> |  | JWT audience (used as additional |
+| [claims.code] | <code>String</code> |  | The challenge code. |
+| [claims.secret] | <code>String</code> |  | A string to sign the JWT. |
+| [claims.iss] | <code>String</code> |  | JWT issuer (used as additional verification). |
+| [claims.aud] | <code>String</code> |  | JWT audience (used as additional |
+| [claims.sub] | <code>String</code> |  | JWT subject (used as additional  verification). |
 | hash | <code>Object</code> |  |  |
 | [hash.salt] | <code>String</code> |  | A string to salt the challenge code  hash. If undefined then the code will not be hashed. |
 | [hash.iterations] | <code>Number</code> | <code>1000</code> | Iterations for hash. |
@@ -83,60 +79,75 @@ const tokenInfo = verify(token, challengeCode);
 ## Examples
 
 ### For Simple Verification
+**Warning: The following example results in an unsigned JWT with an unhashed code. It is highly advised to use both.**
+
+*While all JWTs can be viewed by anyone, unsigned JWTs can also be **modified** by anyone. Seriously, don't use unsigned tokens with unhashed codes.*
 
 ```js
 const {issue, verify} = require('passcode');
-const {v4} = require('uuid');
 
-const secret = v4();
-
-// Generate a token with random passcode
-const {error, value: {id, expires, code, token}} = issue({}, {secret});
+// Generate an unsigned token with random passcode
+const {error, value: {id, expires, code, token}} = issue();
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, value} = verify(token, {secret, code});
+const {error, value} = verify(token, {code});
 ```
 
-### For Verification With Meta Information
+### For Slighlty More Secure Simple Verification
+By default the JWT is unsigned. Providing a secret (as well as other verification claims such as `iss`, `aud`, and `sub`) can provide a bit more security.
+
+*Note: Signed JWTs are not **encrypted**. Any information in a signed JWT can still be viewed by anyone. Signed JWTs only prevent *modification* of the JWT.*
 
 ```js
 const {issue, verify} = require('passcode');
-const {v4} = require('uuid');
 
-const salt = v4();
-const secret = v4();
+// Generate a signed token with random passcode
+const {error, value: {id, expires, code, token}} = issue({}, {YOUR_SECRET});
+/**
+ * Do something with the token
+ */
+// Verify token with code
+const {error, value} = verify(token, {YOUR_SECRET, code});
+```
+### For Even Slighlty More Secure Simple Verification
+By default challenge codes are stored as a plain string in the payload of the JWT. Providing a salt (as well as other hashing options) can provide a bit more security.
 
-// Generate a token with custom payload
+**It is highly recommended to use both a secret and a salt to issue and verify passcodes.**
+
+```js
+const {issue, verify} = require('passcode');
+
+// Generate a signed token with random passcode
 const {error, value: {id, expires, code, token}} = issue(
-  {email: 'foo@bar.com'},
-  {secret}
+  {},
+  {YOUR_SECRET},
+  {YOUR_SALT}
 );
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, {email}} = verify(token, {secret, code});
+const {error, value} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
 ```
 
-### For Hashing Challenge Code
-By default challenge codes are stored as a string in the payload of the JWT. Providing a salt (as well as other hashing options) can provide a bit more security.
+### For Including Payload Data
 
 ```js
 const {issue, verify} = require('passcode');
-const {v4} = require('uuid');
 
-const secret = v4();
-const salt = v4();
-
-// Generate a token with random passcode
-const {error, value: {id, expires, code, token}} = issue({}, {secret}, {salt});
+// Generate a signed token with custom payload
+const {error, value: {id, expires, code, token}} = issue(
+  {email: 'foo@bar.com'},
+  {YOUR_SECRET},
+  {YOUR_SALT}
+);
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, value} = verify(token, {secret, code}, {salt});
+const {error, {email}} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
 ```
 
 ## License

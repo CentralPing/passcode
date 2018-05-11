@@ -8,7 +8,7 @@
 
 A slightly opinionated stateless passcode manager.
 
-As with all JWTs, extreme care should be employed if including any sensitive information in the payload.
+Why *slightly* opinionated? Some people like more flexibility in how to implement solutions and this module hopefully allows for that. The few opinions employed in this module include the choice of hashing method, [`pbkdf2`](https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest) (can be configured), and a custom random 6 digit passcode generator (custom passcodes can be provided). The biggest opinion however is to enforce signing the JWT and hashing the passcode. Doing niether results in a extremely unsecure and effectively useless passcode verification as unsigned JWTs can be modified by anyone and unhashed codes can be read by anyone. If that is desired then this module is superflous as the underlying [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) module can handle that directly.
 
 ## Installation
 
@@ -24,57 +24,24 @@ As with all JWTs, extreme care should be employed if including any sensitive inf
 ## Examples
 
 ### For Simple Verification
-**Warning: The following example results in an unsigned JWT with an unhashed code. It is highly advised to use both.**
-
-*While all JWTs can be viewed by anyone, unsigned JWTs can also be **modified** by anyone. Seriously, don't use unsigned tokens with unhashed codes.*
 
 ```js
 const {issue, verify} = require('passcode');
 
-// Generate an unsigned token with random passcode
-const {error, value: {id, expires, code, token}} = issue();
+// Generate a signed token with hashed random passcode
+const {error, value: {id, expires, passcode, token}} = issue({
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+});
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, value} = verify(token, {code});
-```
-
-### For Slighlty More Secure Simple Verification
-By default the JWT is unsigned. Providing a secret (as well as other verification claims such as `iss`, `aud`, and `sub`) can provide a bit more security.
-
-*Note: Signed JWTs are not **encrypted**. Any information in a signed JWT can still be viewed by anyone. Signed JWTs only prevent *modification* of the JWT.*
-
-```js
-const {issue, verify} = require('passcode');
-
-// Generate a signed token with random passcode
-const {error, value: {id, expires, code, token}} = issue({}, {YOUR_SECRET});
-/**
- * Do something with the token
- */
-// Verify token with code
-const {error, value} = verify(token, {YOUR_SECRET, code});
-```
-### For Even Slighlty More Secure Simple Verification
-By default challenge codes are stored as a plain string in the payload of the JWT. Providing a salt (as well as other hashing options) can provide a bit more security.
-
-**It is highly recommended to use both a secret and a salt to issue and verify passcodes.**
-
-```js
-const {issue, verify} = require('passcode');
-
-// Generate a signed token with random passcode
-const {error, value: {id, expires, code, token}} = issue(
-  {},
-  {YOUR_SECRET},
-  {YOUR_SALT}
-);
-/**
- * Do something with the token
- */
-// Verify token with code
-const {error, value} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
+const {error, value} = verify(token, {
+  passcode: ENTERED_PASSCODE,
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+});
 ```
 
 ### For Including Payload Data
@@ -83,16 +50,21 @@ const {error, value} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
 const {issue, verify} = require('passcode');
 
 // Generate a signed token with custom payload
-const {error, value: {id, expires, code, token}} = issue(
-  {email: 'foo@bar.com'},
-  {YOUR_SECRET},
-  {YOUR_SALT}
-);
+const {error, value: {id, expires, passcode, token}} = issue({
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+}, {
+  email: 'foo@bar.com'
+});
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, {email}} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
+const {error, value: {email}} = verify(token, {
+  passcode: ENTERED_PASSCODE,
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+});
 ```
 
 ## License

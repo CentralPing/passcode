@@ -8,7 +8,7 @@
 
 A slightly opinionated stateless passcode manager.
 
-As with all JWTs, extreme care should be employed if including any sensitive information in the payload.
+Why *slightly* opinionated? Some people like more flexibility in how to implement solutions and this module hopefully allows for that. The few opinions employed in this module include the choice of hashing method, [`pbkdf2`](https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest) (can be configured), and a custom random 6 digit passcode generator (custom passcodes can be provided). The biggest opinion however is to enforce signing the JWT and hashing the passcode. Doing niether results in a extremely unsecure and effectively useless passcode verification as unsigned JWTs can be modified by anyone and unhashed codes can be read by anyone. If that is desired then this module is superflous as the underlying [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) module can handle that directly.
 
 ## Installation
 
@@ -18,118 +18,86 @@ As with all JWTs, extreme care should be employed if including any sensitive inf
 
 <a name="module_passcode..issue"></a>
 
-### passcode~issue([payload], claims, hash) ⇒ <code>Object</code>
-Issues a token, token ID, expiration and the stringified challenge code.
+### passcode~issue(security, [payload], claims, hash) ⇒ <code>Object</code>
+Issues a signed token with a hashed passcode, token ID, expiration time
+ and the stringified passcode.
 
 **Kind**: inner method of [<code>passcode</code>](#module_passcode)  
-**Returns**: <code>Object</code> - `{error, value: {id, expires, code, token}}`  
+**Returns**: <code>Object</code> - `{error, value: {id, expires, passcode, token}}`  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| [payload] | <code>Object</code> |  |  |
-| [payload.jti] | <code>Date</code> |  | JWT ID (defaults to a uuid.v4 value). |
-| claims | <code>Object</code> |  |  |
-| [claims.secret] | <code>String</code> |  | A string to sign the JWT. |
-| [claims.code] | <code>String</code> |  | The challenge code (defaults to random  6 digit string). |
+| security | <code>Object</code> |  |  |
+| security.salt | <code>String</code> |  | A string to salt the passcode hash. |
+| security.secret | <code>String</code> |  | A string to sign the JWT. |
+| [security.passcode] | <code>String</code> |  | The passcode (defaults to random  6 digit string). |
+| [security.iss] | <code>String</code> |  | JWT issuer (used as additional verification). |
+| [security.aud] | <code>String</code> |  | JWT audience (used as additional  verification). |
+| [security.sub] | <code>String</code> |  | JWT subject (used as additional  verification). |
+| [payload] | <code>Object</code> |  | Essentially a passthrough for [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback)  payload support. |
+| [payload.jti] | <code>Date</code> |  | JWT ID (defaults to a [`uuid.v4`](https://github.com/kelektiv/node-uuid#version-4) value). |
+| claims | <code>Object</code> |  | Essentially a passthrough for [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken#jwtsignpayload-secretorprivatekey-options-callback)  claims support. |
 | [claims.expiresIn] | <code>Number</code> \| <code>String</code> | <code>5m</code> | JWT expiration time span.  In seconds or a parsable string for [zeit/ms](https://github.com/zeit/ms) |
-| hash | <code>Object</code> |  |  |
-| [hash.salt] | <code>String</code> |  | A string to salt the challenge code  hash. If undefined then the code will not be hashed. |
-| [hash.iterations] | <code>Number</code> | <code>1000</code> | Iterations for hash. |
-| [hash.keyLength] | <code>Number</code> | <code>64</code> | Length of hash. |
+| hash | <code>Object</code> |  | Essentially a passthrough for [`pbkdf2`](https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest)  hashing options. |
+| [hash.iterations] | <code>Number</code> | <code>1000</code> | Hash iterations. |
+| [hash.keyLength] | <code>Number</code> | <code>64</code> | Hash length. |
 | [hash.digest] | <code>String</code> | <code>sha512</code> | Hashing algorithm. |
 | [hash.encoding] | <code>String</code> | <code>hex</code> | Hash encoding. |
 
 **Example**  
 ```js
-const {value: {id, expires, code, token}} = issue(
-  {email: 'foo@bar.com'},
-  {secret},
-  {salt}
-);
+const {error, value} = issue({salt, secret}, {email: 'foo@bar.com'});
 ```
 <a name="module_passcode..verify"></a>
 
-### passcode~verify(token, claims, hash) ⇒ <code>Object</code>
-Verifies an issued token with the provided challenge code
+### passcode~verify(token, security, hash) ⇒ <code>Object</code>
+Verifies a signed token with the provided challenge passcode.
 
 **Kind**: inner method of [<code>passcode</code>](#module_passcode)  
-**Returns**: <code>Object</code> - `{error, value: {iat, jti, exp, ...TOKEN_INFO}}`  
+**Returns**: <code>Object</code> - `{error, value: {iat, jti, exp, ...TOKEN_PAYLOAD}}`  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
 | token | <code>String</code> |  | The token to be verified |
-| claims | <code>Object</code> |  |  |
-| [claims.code] | <code>String</code> |  | The challenge code. |
-| [claims.secret] | <code>String</code> |  | A string to sign the JWT. |
-| [claims.iss] | <code>String</code> |  | JWT issuer (used as additional verification). |
-| [claims.aud] | <code>String</code> |  | JWT audience (used as additional |
-| [claims.sub] | <code>String</code> |  | JWT subject (used as additional  verification). |
-| hash | <code>Object</code> |  |  |
-| [hash.salt] | <code>String</code> |  | A string to salt the challenge code  hash. If undefined then the code will not be hashed. |
-| [hash.iterations] | <code>Number</code> | <code>1000</code> | Iterations for hash. |
-| [hash.keyLength] | <code>Number</code> | <code>64</code> | Length of hash. |
+| security | <code>Object</code> |  |  |
+| security.passcode | <code>String</code> |  | The challenge passcode. |
+| security.salt | <code>String</code> |  | A string to salt the challenge passcode hash. |
+| security.secret | <code>String</code> |  | A string to verify the JWT. |
+| [security.iss] | <code>String</code> |  | JWT issuer (used as additional verification). |
+| [security.aud] | <code>String</code> |  | JWT audience (used as additional  verification). |
+| [security.sub] | <code>String</code> |  | JWT subject (used as additional  verification). |
+| hash | <code>Object</code> |  | Essentially a passthrough for [`pbkdf2`](https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest)  hashing options. |
+| [hash.iterations] | <code>Number</code> | <code>1000</code> | Hash iterations. |
+| [hash.keyLength] | <code>Number</code> | <code>64</code> | Hash length. |
 | [hash.digest] | <code>String</code> | <code>sha512</code> | Hashing algorithm. |
 | [hash.encoding] | <code>String</code> | <code>hex</code> | Hash encoding. |
 
 **Example**  
 ```js
-const tokenInfo = verify(token, challengeCode);
+const {error, value} = verify(token, {passcode, salt, secret});
 ```
 
 ## Examples
 
 ### For Simple Verification
-**Warning: The following example results in an unsigned JWT with an unhashed code. It is highly advised to use both.**
-
-*While all JWTs can be viewed by anyone, unsigned JWTs can also be **modified** by anyone. Seriously, don't use unsigned tokens with unhashed codes.*
 
 ```js
 const {issue, verify} = require('passcode');
 
-// Generate an unsigned token with random passcode
-const {error, value: {id, expires, code, token}} = issue();
+// Generate a signed token with hashed random passcode
+const {error, value: {id, expires, passcode, token}} = issue({
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+});
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, value} = verify(token, {code});
-```
-
-### For Slighlty More Secure Simple Verification
-By default the JWT is unsigned. Providing a secret (as well as other verification claims such as `iss`, `aud`, and `sub`) can provide a bit more security.
-
-*Note: Signed JWTs are not **encrypted**. Any information in a signed JWT can still be viewed by anyone. Signed JWTs only prevent *modification* of the JWT.*
-
-```js
-const {issue, verify} = require('passcode');
-
-// Generate a signed token with random passcode
-const {error, value: {id, expires, code, token}} = issue({}, {YOUR_SECRET});
-/**
- * Do something with the token
- */
-// Verify token with code
-const {error, value} = verify(token, {YOUR_SECRET, code});
-```
-### For Even Slighlty More Secure Simple Verification
-By default challenge codes are stored as a plain string in the payload of the JWT. Providing a salt (as well as other hashing options) can provide a bit more security.
-
-**It is highly recommended to use both a secret and a salt to issue and verify passcodes.**
-
-```js
-const {issue, verify} = require('passcode');
-
-// Generate a signed token with random passcode
-const {error, value: {id, expires, code, token}} = issue(
-  {},
-  {YOUR_SECRET},
-  {YOUR_SALT}
-);
-/**
- * Do something with the token
- */
-// Verify token with code
-const {error, value} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
+const {error, value} = verify(token, {
+  passcode: ENTERED_PASSCODE,
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+});
 ```
 
 ### For Including Payload Data
@@ -138,16 +106,21 @@ const {error, value} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
 const {issue, verify} = require('passcode');
 
 // Generate a signed token with custom payload
-const {error, value: {id, expires, code, token}} = issue(
-  {email: 'foo@bar.com'},
-  {YOUR_SECRET},
-  {YOUR_SALT}
-);
+const {error, value: {id, expires, passcode, token}} = issue({
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+}, {
+  email: 'foo@bar.com'
+});
 /**
  * Do something with the token
  */
 // Verify token with code
-const {error, {email}} = verify(token, {YOUR_SECRET, code}, {YOUR_SALT});
+const {error, value: {email}} = verify(token, {
+  passcode: ENTERED_PASSCODE,
+  salt: YOUR_SALT,
+  secret: YOUR_SECRET
+});
 ```
 
 ## License

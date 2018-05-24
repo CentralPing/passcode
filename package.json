@@ -65,6 +65,6 @@
         "statements": -10
       }
     },
-    "testRegex": ".*spec\\.(unit|func|e2e)\\.js"
+    "testRegex": ".*spec\\.(unit|func|int)\\.js"
   }
 }

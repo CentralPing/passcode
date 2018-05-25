@@ -79,7 +79,7 @@ const {error, value} = verify(token, {passcode, salt, secret});
 
 ## Examples
 
-### For Simple Verification
+### For Simple Verification With a Secret
 
 ```js
 const {issue, verify} = require('passcode');
@@ -97,6 +97,28 @@ const {error, value} = verify(token, {
   passcode: ENTERED_PASSCODE,
   salt: YOUR_SALT,
   secret: YOUR_SECRET
+});
+```
+
+### For Simple Verification With a Key
+
+```js
+const {issue, verify} = require('passcode');
+const secret = fs.readFileSync('public.pem');
+
+// Generate a signed token with hashed random passcode
+const {error, value: {id, expires, passcode, token}} = issue({
+  salt: YOUR_SALT,
+  secret
+});
+/**
+ * Do something with the token
+ */
+// Verify token with code
+const {error, value} = verify(token, {
+  passcode: ENTERED_PASSCODE,
+  salt: YOUR_SALT,
+  secret
 });
 ```
 

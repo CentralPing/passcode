@@ -8,7 +8,7 @@
 
 A slightly opinionated stateless passcode manager.
 
-Why *slightly* opinionated? Some people like more flexibility in how to implement solutions and this module hopefully allows for that. The few opinions employed in this module include the choice of hashing method, [`pbkdf2`](https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest) (can be configured), and a custom random 6 digit passcode generator (custom passcodes can be provided). The biggest opinion however is to enforce signing the JWT and hashing the passcode. Doing niether results in a extremely unsecure and effectively useless passcode verification as unsigned JWTs can be modified by anyone and unhashed codes can be read by anyone. If that is desired then this module is superflous as the underlying [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) module can handle that directly.
+Why *slightly* opinionated? Some people like more flexibility to implement solutions and this module hopefully allows for that. The few opinions employed in this module include the choice of hashing method, [`pbkdf2`](https://nodejs.org/api/crypto.html#crypto_crypto_pbkdf2sync_password_salt_iterations_keylen_digest) (which can be configured), and a custom random 6 digit passcode generator (custom passcodes can also be provided). The biggest opinion however is to enforce signing the JWT and hashing the passcode. Doing niether results in an unsecure and effectively useless passcode verification as unsigned JWTs can be modified by anyone and unhashed codes can be read by anyone. If that is desired then this module is superflous as the underlying [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) module can handle that directly.
 
 ## Installation
 
@@ -29,7 +29,7 @@ Issues a signed token with a hashed passcode, token ID, expiration time
 | --- | --- | --- | --- |
 | security | <code>Object</code> |  |  |
 | security.salt | <code>String</code> |  | A string to salt the passcode hash. |
-| security.secret | <code>String</code> |  | A string to sign the JWT. |
+| security.secret | <code>String</code> \| <code>Object</code> |  | A string or key to sign the JWT. |
 | [security.passcode] | <code>String</code> |  | The passcode (defaults to random  6 digit string). |
 | [security.iss] | <code>String</code> |  | JWT issuer (used as additional verification). |
 | [security.aud] | <code>String</code> |  | JWT audience (used as additional  verification). |
@@ -62,7 +62,7 @@ Verifies a signed token with the provided challenge passcode.
 | security | <code>Object</code> |  |  |
 | security.passcode | <code>String</code> |  | The challenge passcode. |
 | security.salt | <code>String</code> |  | A string to salt the challenge passcode hash. |
-| security.secret | <code>String</code> |  | A string to verify the JWT. |
+| security.secret | <code>String</code> \| <code>Object</code> |  | A string or key to verify the JWT. |
 | [security.iss] | <code>String</code> |  | JWT issuer (used as additional verification). |
 | [security.aud] | <code>String</code> |  | JWT audience (used as additional  verification). |
 | [security.sub] | <code>String</code> |  | JWT subject (used as additional  verification). |

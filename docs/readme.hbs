@@ -12,7 +12,7 @@ Why *slightly* opinionated? Some people like more flexibility to implement solut
 
 ## Installation
 
-`npm i --save https://github.com/CentralPing/passcode`
+`npm i --save @centralping/passcode`
 
 ## API Reference
 

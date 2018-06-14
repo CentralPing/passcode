@@ -9,12 +9,13 @@
   },
   "scripts": {
     "lint": "eslint \"${INIT_CWD}/**/*.js\"",
+    "watch": "npm test -- --watch --coverage",
+    "docs": "jsdoc2md -t docs/readme.hbs --files lib/*.js > README.md",
     "pretest": "npm run lint",
     "test": "jest",
-    "watch": "npm test -- --watch --coverage",
-    "prepublishOnly": "npm test -- --coverage",
-    "publish": "coveralls < coverage/lcov.info",
-    "docs": "jsdoc2md -t docs/readme.hbs --files lib/*.js > README.md"
+    "preversion": "npm test -- --coverage",
+    "version": "changelog -s v${npm_package_version} && git add CHANGELOG.md && git commit -m \"chore(changelog): update changelog for v${npm_package_version}\"",
+    "postversion": "coveralls < coverage/lcov.info && git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -50,6 +51,7 @@
     "eslint-plugin-import": "^2.12.0",
     "eslint-plugin-jest": "^21.15.2",
     "eslint-plugin-node": "^6.0.1",
+    "generate-changelog": "git+https://github.com/JasonCust/generate-changelog.git",
     "jest": "^23.0.0",
     "jsdoc-to-markdown": "^4.0.1"
   },

@@ -1,3 +1,9 @@
+#### v0.1.1 (2018-06-14)
+
+##### Chores
+
+* **package:**  include public publishing option for builds ([4c8dd0b1](https://github.com/CentralPing/passcode/commit/4c8dd0b1e5e2568e2b2a7af259efd7c842624087))
+
 #### v0.1.0 (2018-06-14)
 
 ##### Chores

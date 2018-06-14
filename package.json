@@ -1,5 +1,5 @@
 {
-  "name": "passcode",
+  "name": "@centralping/passcode",
   "version": "0.0.1",
   "description": "A slightly opinionated stateless passcode manager.",
   "main": "lib/index.js",

@@ -1,6 +1,9 @@
 {
   "name": "@centralping/passcode",
   "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "A slightly opinionated stateless passcode manager.",
   "main": "lib/index.js",
   "module": "lib/main.js",

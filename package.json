@@ -44,7 +44,7 @@
   "dependencies": {
     "esm": "^3.0.37",
     "jsonwebtoken": "^8.2.1",
-    "uuid": "^3.2.1"
+    "uuid": "^7.0.1"
   },
   "devDependencies": {
     "coveralls": "^3.0.1",

@@ -43,7 +43,7 @@
   "homepage": "https://github.com/CentralPing/passcode",
   "dependencies": {
     "esm": "^3.0.37",
-    "jsonwebtoken": "^8.2.1",
+    "jsonwebtoken": "^9.0.0",
     "uuid": "^3.2.1"
   },
   "devDependencies": {
